@@ -16,7 +16,7 @@ class ContactController extends Controller
      */
     public function index()
     {
-        $contacts = Contact::latest()->paginate(10);
+        $contacts = Contact::where('phone', 'like', '+%')->latest()->orderBy('name','ASC')->paginate(20);
         return view('contacts.index', compact('contacts'));
     }
 
@@ -41,7 +41,7 @@ class ContactController extends Controller
             'state' => 'nullable|string|max:100',
             'gender' => 'nullable|in:male,female,other',
             'age' => 'nullable|integer',
-            'tags' => 'nullable|string', // separados por vírgula
+            'tags' => 'nullable|string',
         ]);
 
         $validated['tags'] = $validated['tags']
