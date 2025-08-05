@@ -11,11 +11,19 @@ class WhatsAppService
 {
     private string $baseUrl;
     private int $timeout;
+    private int $messageDelay;
+    private int $maxRetries;
+    private int $dailyLimit;
+    private int $hourlyLimit;
 
     public function __construct()
     {
         $this->baseUrl = config('services.whatsapp.base_url', 'http://localhost:3001');
         $this->timeout = config('services.whatsapp.timeout', 30);
+        $this->messageDelay = config('services.whatsapp.message_delay', 2);
+        $this->maxRetries = config('services.whatsapp.max_retries', 3);
+        $this->dailyLimit = config('services.whatsapp.daily_limit', 1000);
+        $this->hourlyLimit = config('services.whatsapp.hourly_limit', 100);
     }
 
     /**

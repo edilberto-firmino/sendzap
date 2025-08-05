@@ -20,6 +20,7 @@ class SendCampaignJob implements ShouldQueue
     public $timeout = 3600; // 1 hora
     public $tries = 3;
     public $backoff = [60, 300, 600]; // 1min, 5min, 10min
+    public $chunkSize = 100; // Máximo de mensagens por lote
 
     private Campaign $campaign;
     private ?array $contactIds;

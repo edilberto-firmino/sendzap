@@ -40,6 +40,10 @@ return [
         'timeout' => env('WHATSAPP_SERVICE_TIMEOUT', 30),
         'message_delay' => env('WHATSAPP_MESSAGE_DELAY', 2),
         'max_retries' => env('WHATSAPP_MAX_RETRIES', 3),
+        'daily_limit' => env('WHATSAPP_DAILY_LIMIT', 1000),
+        'hourly_limit' => env('WHATSAPP_HOURLY_LIMIT', 100),
+        'chunk_size' => env('WHATSAPP_CHUNK_SIZE', 100),
+        'max_concurrent_jobs' => env('WHATSAPP_MAX_CONCURRENT_JOBS', 3),
     ],
 
 ];

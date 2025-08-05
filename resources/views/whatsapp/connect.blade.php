@@ -14,102 +14,74 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
+                    <!-- Status do WhatsApp -->
+                    <div class="alert alert-info">
+                        <strong>Status:</strong> 
+                        <span id="whatsappStatus">
+                            <span class="badge bg-warning">Verificando...</span>
+                        </span>
+                    </div>
 
-                    @if(session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
-
-                    <!-- Status do Serviço -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <h6>Status do Serviço</h6>
-                                    <div id="serviceStatus">
-                                        <span class="badge bg-{{ $isOnline ? 'success' : 'danger' }}">
-                                            {{ $isOnline ? 'Online' : 'Offline' }}
-                                        </span>
-                                    </div>
-                                </div>
+                    <!-- Seção QR Code -->
+                    <div id="qrCodeSection" style="display: none;">
+                        <div class="text-center mb-3">
+                            <h5>📱 Escaneie o QR Code</h5>
+                            <p class="text-muted">
+                                Abra o WhatsApp no seu celular → Configurações → Aparelhos conectados → Conectar um aparelho
+                            </p>
+                        </div>
+                        
+                        <div class="text-center mb-3">
+                            <div id="qrCode" class="border rounded p-3 bg-light">
+                                <div class="alert alert-info">Aguardando QR Code...</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <h6>Status WhatsApp</h6>
-                                    <div id="whatsappStatus">
-                                        <span class="badge bg-{{ $status['isConnected'] ? 'success' : 'warning' }}">
-                                            {{ $status['isConnected'] ? 'Conectado' : 'Desconectado' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        
+                        <div class="text-center">
+                            <button class="btn btn-primary" onclick="getQRCode()">
+                                <i class="fas fa-sync-alt"></i> Atualizar QR Code
+                            </button>
+                            <button class="btn btn-info" onclick="checkStatus()">
+                                <i class="fas fa-info-circle"></i> Verificar Status
+                            </button>
                         </div>
                     </div>
 
-                    <!-- QR Code -->
-                    <div id="qrCodeSection" class="text-center mb-4" style="display: {{ $status['status'] === 'qr_ready' ? 'block' : 'none' }};">
-                        <h5>Escaneie o QR Code</h5>
-                        <p class="text-muted">Abra o WhatsApp no seu celular e escaneie o código abaixo</p>
-                        <div id="qrCode" class="mb-3"></div>
-                        <button class="btn btn-primary" onclick="refreshQR()">
-                            <i class="fas fa-sync-alt"></i> Atualizar QR Code
-                        </button>
-                    </div>
-
-                    <!-- Status Conectado -->
-                    <div id="connectedSection" class="text-center mb-4" style="display: {{ $status['isConnected'] ? 'block' : 'none' }};">
+                    <!-- Seção Conectado -->
+                    <div id="connectedSection" style="display: none;">
                         <div class="alert alert-success">
                             <h5><i class="fas fa-check-circle"></i> WhatsApp Conectado!</h5>
                             <p>Seu WhatsApp está conectado e pronto para enviar mensagens.</p>
                         </div>
                     </div>
 
-                    <!-- Mensagem de Teste -->
-                    <div id="testMessageSection" class="mb-4" style="display: {{ $status['isConnected'] ? 'block' : 'none' }};">
-                        <h5>Enviar Mensagem de Teste</h5>
-                        <form id="testMessageForm">
-                            <div class="row">
-                                <div class="col-md-6">
+                    <!-- Seção Teste de Mensagem -->
+                    <div id="testMessageSection" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6>🧪 Teste de Mensagem</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="testMessageForm">
                                     <div class="mb-3">
-                                        <label for="testPhone" class="form-label">Telefone</label>
-                                        <input type="text" class="form-control" id="testPhone" name="phone" 
-                                               placeholder="+5511999999999" required>
+                                        <label for="testPhone" class="form-label">Número do Telefone (com código do país)</label>
+                                        <input type="text" class="form-control" id="testPhone" placeholder="5511999999999" required>
+                                        <div class="form-text">Exemplo: 5511999999999 (Brasil)</div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="testMessage" class="form-label">Mensagem</label>
-                                        <input type="text" class="form-control" id="testMessage" name="message" 
-                                               placeholder="Mensagem de teste" required>
+                                        <textarea class="form-control" id="testMessage" rows="3" placeholder="Olá! Esta é uma mensagem de teste do SendZap." required></textarea>
                                     </div>
-                                </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane"></i> Enviar Teste
+                                    </button>
+                                </form>
                             </div>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-paper-plane"></i> Enviar Teste
-                            </button>
-                        </form>
-                        <div id="testResult" class="mt-3"></div>
+                        </div>
                     </div>
 
                     <!-- Botões de Ação -->
-                    <div class="text-center">
-                        <button class="btn btn-info me-2" onclick="checkStatus()">
-                            <i class="fas fa-sync-alt"></i> Verificar Status
-                        </button>
-                        
-                        @if($status['isConnected'])
-                            <form action="{{ route('whatsapp.disconnect') }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-danger me-2" onclick="return confirm('Tem certeza que deseja desconectar?')">
-                                    <i class="fas fa-times"></i> Desconectar
-                                </button>
-                            </form>
-                        @endif
-                        
+                    <div class="mt-4 text-center">
                         <form action="{{ route('whatsapp.clear-auth') }}" method="POST" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-warning" onclick="return confirm('Isso irá limpar todos os dados de autenticação e forçar uma nova conexão. Tem certeza?')">
@@ -123,133 +95,166 @@
     </div>
 </div>
 
-<!-- QR Code Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<!-- QR Code gerado pelo servidor - sem dependências externas -->
 
 <script>
+// Variáveis globais
 let statusCheckInterval;
 
-// Verificar status periodicamente
-function startStatusCheck() {
-    statusCheckInterval = setInterval(checkStatus, 5000); // 5 segundos
-}
-
-function stopStatusCheck() {
-    if (statusCheckInterval) {
-        clearInterval(statusCheckInterval);
-    }
-}
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Página carregada, iniciando...');
+    
+    // Iniciar verificação de status imediatamente
+    checkStatus();
+    startStatusCheck();
+});
 
 // Verificar status do WhatsApp
 function checkStatus() {
+    console.log('🔍 Verificando status...');
+    
     fetch('{{ route("whatsapp.status") }}')
         .then(response => response.json())
         .then(data => {
-            updateStatusDisplay(data);
+            console.log('📊 Status recebido:', data);
+            updateDisplay(data);
         })
         .catch(error => {
-            console.error('Erro ao verificar status:', error);
+            console.error('❌ Erro ao verificar status:', error);
+            document.getElementById('whatsappStatus').innerHTML = '<span class="badge bg-danger">Erro</span>';
         });
 }
 
-// Atualizar display do status
-function updateStatusDisplay(status) {
-    const whatsappStatus = document.getElementById('whatsappStatus');
-    const qrCodeSection = document.getElementById('qrCodeSection');
+// Atualizar display baseado no status
+function updateDisplay(status) {
+    const qrSection = document.getElementById('qrCodeSection');
     const connectedSection = document.getElementById('connectedSection');
-    const testMessageSection = document.getElementById('testMessageSection');
-
-    // Atualizar badge do status
-    whatsappStatus.innerHTML = `
-        <span class="badge bg-${status.isConnected ? 'success' : 'warning'}">
-            ${status.isConnected ? 'Conectado' : 'Desconectado'}
-        </span>
-    `;
-
-    // Mostrar/ocultar seções baseado no status
-    if (status.status === 'qr_ready') {
-        qrCodeSection.style.display = 'block';
-        connectedSection.style.display = 'none';
-        testMessageSection.style.display = 'none';
-        getQRCode();
-    } else if (status.isConnected) {
-        qrCodeSection.style.display = 'none';
+    const testSection = document.getElementById('testMessageSection');
+    const statusElement = document.getElementById('whatsappStatus');
+    
+    // Atualizar badge de status
+    if (status.isConnected) {
+        statusElement.innerHTML = '<span class="badge bg-success">Conectado</span>';
+        qrSection.style.display = 'none';
         connectedSection.style.display = 'block';
-        testMessageSection.style.display = 'block';
-        stopStatusCheck(); // Parar verificação quando conectado
-    } else {
-        qrCodeSection.style.display = 'none';
+        testSection.style.display = 'block';
+        stopStatusCheck();
+    } else if (status.status === 'qr_ready') {
+        statusElement.innerHTML = '<span class="badge bg-warning">QR Code Pronto</span>';
+        qrSection.style.display = 'block';
         connectedSection.style.display = 'none';
-        testMessageSection.style.display = 'none';
+        testSection.style.display = 'none';
+        getQRCode();
+    } else {
+        statusElement.innerHTML = '<span class="badge bg-secondary">Desconectado</span>';
+        qrSection.style.display = 'none';
+        connectedSection.style.display = 'none';
+        testSection.style.display = 'none';
     }
 }
 
 // Obter QR Code
 function getQRCode() {
+    console.log('🔄 Buscando QR Code...');
+    
+    const qrContainer = document.getElementById('qrCode');
+    qrContainer.innerHTML = '<div class="alert alert-info">Carregando QR Code...</div>';
+    
     fetch('{{ route("whatsapp.qr") }}')
         .then(response => response.json())
         .then(data => {
+            console.log('📊 Dados QR recebidos:', data);
+            
             if (data.qr) {
-                const qrContainer = document.getElementById('qrCode');
-                qrContainer.innerHTML = '';
-                QRCode.toCanvas(qrContainer, data.qr, { width: 256 }, function (error) {
-                    if (error) console.error(error);
-                });
+                console.log('✅ QR Code encontrado, gerando...');
+                generateQRCode(qrContainer, data.qr);
+            } else {
+                console.log('⚠️ QR Code não disponível');
+                qrContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6>QR Code não disponível</h6>
+                        <p>${data.message || 'Tente novamente em alguns segundos.'}</p>
+                        <button class="btn btn-sm btn-primary" onclick="getQRCode()">Tentar Novamente</button>
+                    </div>
+                `;
             }
         })
         .catch(error => {
-            console.error('Erro ao obter QR Code:', error);
+            console.error('❌ Erro ao obter QR Code:', error);
+            qrContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>Erro ao carregar QR Code</h6>
+                    <p>${error.message}</p>
+                    <button class="btn btn-sm btn-primary" onclick="getQRCode()">Tentar Novamente</button>
+                </div>
+            `;
         });
 }
 
-// Atualizar QR Code
-function refreshQR() {
-    getQRCode();
+// Gerar QR Code usando imagem do servidor
+function generateQRCode(container, qrData) {
+    console.log('🎨 Gerando QR Code via servidor...');
+    
+    // Usar a rota que gera imagem no servidor
+    const imageUrl = '{{ route("whatsapp.qr-image") }}';
+    
+    container.innerHTML = `
+        <img src="${imageUrl}?t=${Date.now()}" alt="QR Code" class="img-fluid" style="max-width: 256px;">
+        <div class="mt-2">
+            <small class="text-muted">Escaneie este QR Code com seu WhatsApp</small>
+        </div>
+    `;
+    
+    console.log('✅ QR Code carregado via servidor!');
 }
 
-// Enviar mensagem de teste
-document.getElementById('testMessageForm').addEventListener('submit', function(e) {
+// Iniciar verificação periódica
+function startStatusCheck() {
+    statusCheckInterval = setInterval(checkStatus, 5000);
+    console.log('⏰ Verificação periódica iniciada (5s)');
+}
+
+// Parar verificação periódica
+function stopStatusCheck() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        console.log('⏹️ Verificação periódica parada');
+    }
+}
+
+// Teste de mensagem
+document.getElementById('testMessageForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const formData = new FormData(this);
-    const resultDiv = document.getElementById('testResult');
+    const phone = document.getElementById('testPhone').value;
+    const message = document.getElementById('testMessage').value;
     
-    resultDiv.innerHTML = '<div class="alert alert-info">Enviando mensagem...</div>';
+    console.log('📤 Enviando mensagem de teste...');
     
     fetch('{{ route("whatsapp.test-message") }}', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
-            phone: formData.get('phone'),
-            message: formData.get('message')
+            phone: phone,
+            message: message
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-            this.reset();
+            alert('✅ Mensagem enviada com sucesso!');
         } else {
-            resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            alert('❌ Erro: ' + data.error);
         }
     })
     .catch(error => {
-        resultDiv.innerHTML = '<div class="alert alert-danger">Erro ao enviar mensagem</div>';
-        console.error('Erro:', error);
+        console.error('❌ Erro ao enviar mensagem:', error);
+        alert('❌ Erro ao enviar mensagem');
     });
-});
-
-// Iniciar verificação de status quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    checkStatus();
-    
-    // Se não estiver conectado, iniciar verificação periódica
-    if (!{{ $status['isConnected'] ? 'true' : 'false' }}) {
-        startStatusCheck();
-    }
 });
 </script>
 @endsection 

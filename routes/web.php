@@ -40,6 +40,7 @@ Route::resource('campaigns', CampaignController::class);
 Route::prefix('whatsapp')->group(function () {
     Route::get('connect', [WhatsAppController::class, 'connectForm'])->name('whatsapp.connect');
     Route::get('qr', [WhatsAppController::class, 'getQrCode'])->name('whatsapp.qr');
+    Route::get('qr-image', [WhatsAppController::class, 'getQrCodeImage'])->name('whatsapp.qr-image');
     Route::get('status', [WhatsAppController::class, 'getStatus'])->name('whatsapp.status');
     Route::post('disconnect', [WhatsAppController::class, 'disconnect'])->name('whatsapp.disconnect');
     Route::post('clear-auth', [WhatsAppController::class, 'clearAuth'])->name('whatsapp.clear-auth');

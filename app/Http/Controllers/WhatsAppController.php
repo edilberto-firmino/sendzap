@@ -37,6 +37,36 @@ class WhatsAppController extends Controller
     }
 
     /**
+     * Obter QR Code como imagem
+     */
+    public function getQrCodeImage()
+    {
+        $qrData = $this->whatsappService->getQrCode();
+        
+        if (!$qrData['qr']) {
+            return response()->json(['error' => 'QR Code não disponível'], 404);
+        }
+
+        try {
+            // Usar a biblioteca Endroid QR Code para gerar QR code válido
+            $qrCode = new \Endroid\QrCode\QrCode($qrData['qr']);
+
+            // Gerar como PNG
+            $writer = new \Endroid\QrCode\Writer\PngWriter();
+            $result = $writer->write($qrCode);
+
+            // Output como PNG
+            header('Content-Type: image/png');
+            echo $result->getString();
+            exit;
+            
+        } catch (\Exception $e) {
+            Log::error('Erro ao gerar QR Code: ' . $e->getMessage());
+            return response()->json(['error' => 'Erro ao gerar QR Code'], 500);
+        }
+    }
+
+    /**
      * Obter status da conexão
      */
     public function getStatus()
