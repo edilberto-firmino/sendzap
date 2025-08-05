@@ -74,6 +74,15 @@
                 <li><a class="dropdown-item" href="{{ route('campaigns.create') }}">Nova Campanha</a></li>
             </ul>
         </div>
+        <div class="dropdown">
+            <a class="dropdown-toggle d-block px-3 py-2 text-white text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                📱 WhatsApp
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="{{ route('whatsapp.connect') }}">Conectar WhatsApp</a></li>
+                <li><a class="dropdown-item" href="{{ route('whatsapp.health') }}">Status do Serviço</a></li>
+            </ul>
+        </div>
         {{-- Adicione outros links conforme necessário --}}
     </div>
 

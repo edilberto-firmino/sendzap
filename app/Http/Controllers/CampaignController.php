@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\Contact;
+use App\Jobs\SendCampaignJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -109,7 +110,7 @@ class CampaignController extends Controller
     }
 
     /**
-     * Dispara a campanha (chama webhook para n8n).
+     * Dispara a campanha usando o sistema WhatsApp.
      */
     public function dispatch(Campaign $campaign)
     {
@@ -117,12 +118,15 @@ class CampaignController extends Controller
             return redirect()->back()->with('error', 'Campanha não pode ser enviada!');
         }
 
-        // TODO: Implementar webhook para n8n
-        // Por enquanto, apenas marca como ativa
-        $campaign->update(['status' => 'active']);
+        try {
+            // Disparar job em background
+            SendCampaignJob::dispatch($campaign);
 
-        return redirect()->route('campaigns.show', $campaign)
-            ->with('success', 'Campanha enviada para processamento!');
+            return redirect()->route('campaigns.show', $campaign)
+                ->with('success', 'Campanha enviada para processamento! Verifique os logs para acompanhar o progresso.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao enviar campanha: ' . $e->getMessage());
+        }
     }
 
     /**
