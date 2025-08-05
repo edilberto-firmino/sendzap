@@ -85,17 +85,23 @@ class WhatsAppController extends Controller
             $result = $this->whatsappService->disconnect();
 
             if ($result['success']) {
-                return redirect()->route('whatsapp.connect')
-                    ->with('success', 'WhatsApp desconectado com sucesso!');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'WhatsApp desconectado com sucesso!'
+                ]);
             } else {
-                return redirect()->route('whatsapp.connect')
-                    ->with('error', 'Erro ao desconectar: ' . $result['error']);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao desconectar: ' . $result['error']
+                ], 400);
             }
         } catch (\Exception $e) {
             Log::error('Erro ao desconectar WhatsApp: ' . $e->getMessage());
             
-            return redirect()->route('whatsapp.connect')
-                ->with('error', 'Erro interno ao desconectar WhatsApp');
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno ao desconectar WhatsApp'
+            ], 500);
         }
     }
 

@@ -82,12 +82,30 @@
 
                     <!-- Botões de Ação -->
                     <div class="mt-4 text-center">
-                        <form action="{{ route('whatsapp.clear-auth') }}" method="POST" style="display: inline;">
-                            @csrf
-                            <button type="submit" class="btn btn-warning" onclick="return confirm('Isso irá limpar todos os dados de autenticação e forçar uma nova conexão. Tem certeza?')">
-                                <i class="fas fa-trash"></i> Limpar Autenticação
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-primary" onclick="forceReconnect()">
+                                <i class="fas fa-sync-alt"></i> Reset/Reconectar
                             </button>
-                        </form>
+                            {{-- <button class="btn btn-info" onclick="checkStatus()">
+                                <i class="fas fa-info-circle"></i> Verificar Status
+                            </button> --}}
+                        </div>
+                        
+                        <!-- Botão de emergência (oculto por padrão) -->
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-warning" onclick="showEmergencyOptions()">
+                                <i class="fas fa-exclamation-triangle"></i> Opções de Emergência
+                            </button>
+                        </div>
+                        
+                        <div id="emergencyOptions" style="display: none;" class="mt-2">
+                            <form action="{{ route('whatsapp.clear-auth') }}" method="POST" style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('⚠️ ATENÇÃO: Isso irá limpar TODOS os dados de autenticação e forçar uma nova conexão. Use apenas se o Reset/Reconectar não funcionar. Tem certeza?')">
+                                    <i class="fas fa-trash"></i> Limpar Autenticação (Emergência)
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -220,6 +238,67 @@ function stopStatusCheck() {
     if (statusCheckInterval) {
         clearInterval(statusCheckInterval);
         console.log('⏹️ Verificação periódica parada');
+    }
+}
+
+// Função para forçar reconexão
+function forceReconnect() {
+    console.log('🔄 Iniciando processo de Reset/Reconectar...');
+    
+    const qrContainer = document.getElementById('qrCode');
+    const statusElement = document.getElementById('whatsappStatus');
+    
+    // Mostrar loading
+    statusElement.innerHTML = '<span class="badge bg-warning">Reconectando...</span>';
+    qrContainer.innerHTML = '<div class="alert alert-info">🔄 Reconectando WhatsApp...</div>';
+    
+    // Primeiro, verificar se está conectado
+    fetch('{{ route("whatsapp.status") }}')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📊 Status atual:', data);
+            
+            if (data.isConnected) {
+                console.log('📱 WhatsApp conectado, desconectando primeiro...');
+                // Se está conectado, desconectar primeiro
+                return fetch('{{ route("whatsapp.disconnect") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+            } else {
+                console.log('📱 WhatsApp já desconectado, gerando novo QR Code...');
+                return Promise.resolve();
+            }
+        })
+        .then(() => {
+            // Aguardar um pouco e verificar status novamente
+            setTimeout(() => {
+                console.log('⏳ Aguardando novo status...');
+                checkStatus();
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('❌ Erro no processo de reconexão:', error);
+            statusElement.innerHTML = '<span class="badge bg-danger">Erro</span>';
+            qrContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>Erro no processo de reconexão</h6>
+                    <p>${error.message}</p>
+                    <button class="btn btn-sm btn-primary" onclick="forceReconnect()">Tentar Novamente</button>
+                </button>
+            `;
+        });
+}
+
+// Função para mostrar opções de emergência
+function showEmergencyOptions() {
+    const emergencyDiv = document.getElementById('emergencyOptions');
+    if (emergencyDiv.style.display === 'none') {
+        emergencyDiv.style.display = 'block';
+    } else {
+        emergencyDiv.style.display = 'none';
     }
 }
 
