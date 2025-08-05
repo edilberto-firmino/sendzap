@@ -7,7 +7,10 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Campanhas</h1>
-        <a href="{{ route('campaigns.create') }}" class="btn btn-primary">+ Nova Campanha</a>
+        <div>
+            <a href="{{ route('campaigns.create') }}" class="btn btn-primary">+ Nova Campanha</a>
+            <a href="{{ route('campaigns.dispatch.select') }}" class="btn btn-success ms-2">🚀 Disparar Campanhas</a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -82,6 +85,61 @@
 
     <div class="d-flex justify-content-center mt-4">
         {{ $campaigns->links('pagination::bootstrap-5') }}
+    </div>
+
+    {{-- Seção de Campanhas para Disparo --}}
+    <div id="disparar" class="mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>🚀 Campanhas Disponíveis para Disparo</h2>
+        </div>
+        
+        @php
+            $campanhasParaDisparar = $campaigns->whereIn('status', ['draft', 'active', 'paused'])->where('total_contacts', '>', 0);
+        @endphp
+        
+        @if($campanhasParaDisparar->count() > 0)
+            <div class="row">
+                @foreach($campanhasParaDisparar as $campaign)
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">{{ $campaign->name }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ Str::limit($campaign->message_text, 100) }}</p>
+                                
+                                <div class="alert alert-info">
+                                    <strong>📊 Estatísticas:</strong><br>
+                                    • Total de contatos: {{ $campaign->total_contacts }}<br>
+                                    • Contatos válidos: {{ $campaign->total_contacts }}<br>
+                                    • Status: {{ ucfirst($campaign->status) }}
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a href="{{ route('campaigns.dispatch.form', $campaign) }}" class="btn btn-success">
+                                        🚀 Disparar Campanha
+                                    </a>
+                                    <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-outline-primary btn-sm">Ver Detalhes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-center py-5">
+                <div class="alert alert-info">
+                    <h4>📋 Nenhuma campanha disponível para disparo</h4>
+                    <p class="mb-3">Para disparar uma campanha, ela precisa estar:</p>
+                    <ul class="text-start">
+                        <li>Com status "Rascunho", "Ativa" ou "Pausada"</li>
+                        <li>Com contatos cadastrados no sistema</li>
+                        <li>Com mensagem configurada</li>
+                    </ul>
+                    <a href="{{ route('campaigns.create') }}" class="btn btn-primary">Criar Nova Campanha</a>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 @endsection 

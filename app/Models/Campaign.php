@@ -91,6 +91,6 @@ class Campaign extends Model
      */
     public function canBeSent()
     {
-        return in_array($this->status, ['draft', 'paused']) && $this->total_contacts > 0;
+        return in_array($this->status, ['draft', 'active', 'paused']) && $this->total_contacts > 0;
     }
 }

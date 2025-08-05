@@ -18,7 +18,7 @@ class ContactFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'phone' => '+55' . fake()->numerify('###########'),
+            'phone' => '+55' . fake()->unique()->numerify('###########'),
             'email' => fake()->email(),
             'cpf' => fake()->numerify('###.###.###-##'),
             'social_name' => fake()->optional()->name(),

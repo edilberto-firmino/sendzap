@@ -221,6 +221,33 @@ class WhatsAppService
     }
 
     /**
+     * Limpar dados de autenticação e forçar nova conexão
+     */
+    public function clearAuth(): array
+    {
+        try {
+            $response = Http::timeout($this->timeout)
+                ->post($this->baseUrl . '/clear-auth');
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Erro ao limpar dados de autenticação'
+            ];
+
+        } catch (Exception $e) {
+            Log::error('Erro ao limpar dados de autenticação: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Atualizar log da campanha
      */
     private function updateCampaignLog(int $campaignLogId, array $data): void

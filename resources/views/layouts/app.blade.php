@@ -72,6 +72,8 @@
             <ul class="dropdown-menu dropdown-menu-dark">
                 <li><a class="dropdown-item" href="{{ route('campaigns.index') }}">Listar Campanhas</a></li>
                 <li><a class="dropdown-item" href="{{ route('campaigns.create') }}">Nova Campanha</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-success" href="{{ route('campaigns.dispatch.select') }}">🚀 Disparar Campanhas</a></li>
             </ul>
         </div>
         <div class="dropdown">

@@ -104,11 +104,18 @@
                         @if($status['isConnected'])
                             <form action="{{ route('whatsapp.disconnect') }}" method="POST" style="display: inline;">
                                 @csrf
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja desconectar?')">
+                                <button type="submit" class="btn btn-danger me-2" onclick="return confirm('Tem certeza que deseja desconectar?')">
                                     <i class="fas fa-times"></i> Desconectar
                                 </button>
                             </form>
                         @endif
+                        
+                        <form action="{{ route('whatsapp.clear-auth') }}" method="POST" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning" onclick="return confirm('Isso irá limpar todos os dados de autenticação e forçar uma nova conexão. Tem certeza?')">
+                                <i class="fas fa-trash"></i> Limpar Autenticação
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -251,6 +251,47 @@ app.post('/disconnect', async (req, res) => {
     }
 });
 
+// Limpar dados de autenticação (força nova conexão)
+app.post('/clear-auth', async (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Desconectar primeiro
+        if (sock) {
+            await sock.logout();
+            sock = null;
+            isConnected = false;
+            connectionStatus = 'disconnected';
+        }
+        
+        // Limpar pasta auth_info_baileys
+        const authPath = path.join(__dirname, 'auth_info_baileys');
+        if (fs.existsSync(authPath)) {
+            const files = fs.readdirSync(authPath);
+            for (const file of files) {
+                fs.unlinkSync(path.join(authPath, file));
+            }
+            console.log('Dados de autenticação limpos');
+        }
+        
+        // Reconectar automaticamente
+        setTimeout(() => {
+            connectToWhatsApp();
+        }, 2000);
+        
+        res.json({
+            success: true,
+            message: 'Dados de autenticação limpos. Nova conexão será iniciada automaticamente.'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({

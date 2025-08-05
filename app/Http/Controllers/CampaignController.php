@@ -99,6 +99,19 @@ class CampaignController extends Controller
     }
 
     /**
+     * Exibe tela para selecionar campanha para disparo.
+     */
+    public function selectForDispatch()
+    {
+        $campaigns = Campaign::whereIn('status', ['draft', 'active', 'paused'])
+                            ->where('total_contacts', '>', 0)
+                            ->latest()
+                            ->get();
+        
+        return view('campaigns.select-dispatch', compact('campaigns'));
+    }
+
+    /**
      * Exibe formulário para disparar campanha.
      */
     public function dispatchForm(Campaign $campaign)

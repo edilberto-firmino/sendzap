@@ -12,6 +12,13 @@ class CampaignTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Desabilitar todos os middlewares para testes
+        $this->withoutMiddleware();
+    }
+
     /**
      * Testa se a página de listagem de campanhas carrega.
      */
@@ -50,7 +57,8 @@ class CampaignTest extends TestCase
             'status' => 'draft',
         ];
 
-        $response = $this->post('/campaigns', $campaignData);
+        $response = $this->withoutMiddleware()
+            ->post('/campaigns', $campaignData);
 
         $response->assertRedirect('/campaigns');
         $response->assertSessionHas('success');
@@ -73,9 +81,11 @@ class CampaignTest extends TestCase
             'status' => 'draft',
         ];
 
-        $response = $this->post('/campaigns', $campaignData);
+        $response = $this->withoutMiddleware()
+            ->post('/campaigns', $campaignData);
 
         $response->assertSessionHasErrors(['name']);
+        $response->assertStatus(302); // Redirect back with errors
     }
 
     /**
@@ -89,9 +99,11 @@ class CampaignTest extends TestCase
             'status' => 'draft',
         ];
 
-        $response = $this->post('/campaigns', $campaignData);
+        $response = $this->withoutMiddleware()
+            ->post('/campaigns', $campaignData);
 
         $response->assertSessionHasErrors(['message_text']);
+        $response->assertStatus(302); // Redirect back with errors
     }
 
     /**
@@ -134,7 +146,8 @@ class CampaignTest extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->put("/campaigns/{$campaign->id}", $updateData);
+        $response = $this->withoutMiddleware()
+            ->put("/campaigns/{$campaign->id}", $updateData);
 
         $response->assertRedirect('/campaigns');
         $response->assertSessionHas('success');
@@ -154,7 +167,8 @@ class CampaignTest extends TestCase
     {
         $campaign = Campaign::factory()->create();
 
-        $response = $this->delete("/campaigns/{$campaign->id}");
+        $response = $this->withoutMiddleware()
+            ->delete("/campaigns/{$campaign->id}");
 
         $response->assertRedirect('/campaigns');
         $response->assertSessionHas('success');

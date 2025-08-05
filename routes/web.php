@@ -21,6 +21,7 @@ Route::resource('contacts', ContactController::class);
 // Rotas de Campanhas
 Route::prefix('campaigns')->group(function () {
     // Rotas de disparo
+    Route::get('dispatch/select', [CampaignController::class, 'selectForDispatch'])->name('campaigns.dispatch.select');
     Route::get('{campaign}/dispatch', [CampaignController::class, 'dispatchForm'])->name('campaigns.dispatch.form');
     Route::post('{campaign}/dispatch', [CampaignController::class, 'dispatch'])->name('campaigns.dispatch');
     
@@ -41,6 +42,7 @@ Route::prefix('whatsapp')->group(function () {
     Route::get('qr', [WhatsAppController::class, 'getQrCode'])->name('whatsapp.qr');
     Route::get('status', [WhatsAppController::class, 'getStatus'])->name('whatsapp.status');
     Route::post('disconnect', [WhatsAppController::class, 'disconnect'])->name('whatsapp.disconnect');
+    Route::post('clear-auth', [WhatsAppController::class, 'clearAuth'])->name('whatsapp.clear-auth');
     Route::post('test-message', [WhatsAppController::class, 'sendTestMessage'])->name('whatsapp.test-message');
     Route::get('health', [WhatsAppController::class, 'healthCheck'])->name('whatsapp.health');
 });

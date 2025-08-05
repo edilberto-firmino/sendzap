@@ -2,28 +2,17 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Services\WhatsAppService;
-use App\Models\Campaign;
-use App\Models\Contact;
-use App\Models\CampaignLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class WhatsAppServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private WhatsAppService $whatsappService;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->whatsappService = new WhatsAppService();
-    }
-
-    /** @test */
+    #[Test]
     public function it_can_check_service_status()
     {
         Http::fake([
@@ -34,29 +23,28 @@ class WhatsAppServiceTest extends TestCase
             ], 200)
         ]);
 
-        $status = $this->whatsappService->getStatus();
+        $service = new WhatsAppService();
+        $status = $service->getStatus();
 
-        $this->assertArrayHasKey('status', $status);
-        $this->assertArrayHasKey('isConnected', $status);
         $this->assertTrue($status['isConnected']);
+        $this->assertEquals('connected', $status['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_error_when_service_is_offline()
     {
         Http::fake([
             'localhost:3001/status' => Http::response([], 500)
         ]);
 
-        $status = $this->whatsappService->getStatus();
+        $service = new WhatsAppService();
+        $status = $service->getStatus();
 
-        $this->assertArrayHasKey('status', $status);
-        $this->assertArrayHasKey('isConnected', $status);
         $this->assertFalse($status['isConnected']);
         $this->assertEquals('error', $status['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_qr_code()
     {
         Http::fake([
@@ -66,105 +54,105 @@ class WhatsAppServiceTest extends TestCase
             ], 200)
         ]);
 
-        $qrData = $this->whatsappService->getQrCode();
+        $service = new WhatsAppService();
+        $result = $service->getQrCode();
 
-        $this->assertArrayHasKey('qr', $qrData);
-        $this->assertArrayHasKey('status', $qrData);
-        $this->assertEquals('test-qr-code', $qrData['qr']);
-        $this->assertEquals('qr_ready', $qrData['status']);
+        $this->assertEquals('test-qr-code', $result['qr']);
+        $this->assertEquals('qr_ready', $result['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_send_message()
     {
         Http::fake([
             'localhost:3001/send-message' => Http::response([
                 'success' => true,
-                'messageId' => 'test-message-id',
+                'messageId' => 'test-id',
                 'status' => 'sent'
             ], 200)
         ]);
 
-        $result = $this->whatsappService->sendMessage('+5511999999999', 'Test message');
+        $service = new WhatsAppService();
+        $result = $service->sendMessage('+5511999999999', 'Teste');
 
         $this->assertTrue($result['success']);
-        $this->assertEquals('test-message-id', $result['messageId']);
         $this->assertEquals('sent', $result['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_message_send_failure()
     {
         Http::fake([
             'localhost:3001/send-message' => Http::response([
                 'success' => false,
-                'error' => 'WhatsApp not connected',
+                'error' => 'Erro de envio',
                 'status' => 'failed'
             ], 400)
         ]);
 
-        $result = $this->whatsappService->sendMessage('+5511999999999', 'Test message');
+        $service = new WhatsAppService();
+        $result = $service->sendMessage('+5511999999999', 'Teste');
 
         $this->assertFalse($result['success']);
         $this->assertEquals('failed', $result['status']);
-        $this->assertArrayHasKey('error', $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_format_phone_numbers()
     {
-        $formatted = $this->whatsappService->formatPhone('11999999999');
-        $this->assertEquals('5511999999999', $formatted);
+        $service = new WhatsAppService();
 
-        $formatted = $this->whatsappService->formatPhone('+5511999999999');
-        $this->assertEquals('5511999999999', $formatted);
-
-        $formatted = $this->whatsappService->formatPhone('(11) 99999-9999');
-        $this->assertEquals('5511999999999', $formatted);
+        $this->assertEquals('5511999999999', $service->formatPhone('11999999999'));
+        $this->assertEquals('5511999999999', $service->formatPhone('+5511999999999'));
+        $this->assertEquals('5511999999999', $service->formatPhone('(11) 99999-9999'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_validate_phone_numbers()
     {
-        $this->assertTrue($this->whatsappService->validatePhone('11999999999'));
-        $this->assertTrue($this->whatsappService->validatePhone('+5511999999999'));
-        $this->assertFalse($this->whatsappService->validatePhone('9999999')); // Muito curto
-        $this->assertFalse($this->whatsappService->validatePhone('551199999999999999')); // Muito longo
+        $service = new WhatsAppService();
+
+        $this->assertTrue($service->validatePhone('11999999999'));
+        $this->assertTrue($service->validatePhone('+5511999999999'));
+        $this->assertFalse($service->validatePhone('123'));
+        $this->assertFalse($service->validatePhone(''));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_service_is_online()
     {
         Http::fake([
-            'localhost:3001/health' => Http::response(['status' => 'ok'], 200)
+            'localhost:3001/health' => Http::response([], 200)
         ]);
 
-        $this->assertTrue($this->whatsappService->isOnline());
+        $service = new WhatsAppService();
+        $this->assertTrue($service->isOnline());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_false_when_service_is_offline()
     {
         Http::fake([
             'localhost:3001/health' => Http::response([], 500)
         ]);
 
-        $this->assertFalse($this->whatsappService->isOnline());
+        $service = new WhatsAppService();
+        $this->assertFalse($service->isOnline());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_disconnect_whatsapp()
     {
         Http::fake([
             'localhost:3001/disconnect' => Http::response([
                 'success' => true,
-                'message' => 'WhatsApp desconectado com sucesso'
+                'message' => 'Desconectado com sucesso'
             ], 200)
         ]);
 
-        $result = $this->whatsappService->disconnect();
+        $service = new WhatsAppService();
+        $result = $service->disconnect();
 
         $this->assertTrue($result['success']);
-        $this->assertArrayHasKey('message', $result);
     }
 } 

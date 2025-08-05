@@ -122,4 +122,27 @@ class WhatsAppController extends Controller
             'timestamp' => now()->toISOString()
         ]);
     }
+
+    /**
+     * Limpar dados de autenticação e forçar nova conexão
+     */
+    public function clearAuth()
+    {
+        try {
+            $result = $this->whatsappService->clearAuth();
+
+            if ($result['success']) {
+                return redirect()->route('whatsapp.connect')
+                    ->with('success', 'Dados de autenticação limpos! Nova conexão será iniciada automaticamente.');
+            } else {
+                return redirect()->route('whatsapp.connect')
+                    ->with('error', 'Erro ao limpar dados: ' . $result['error']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao limpar dados de autenticação: ' . $e->getMessage());
+            
+            return redirect()->route('whatsapp.connect')
+                ->with('error', 'Erro interno ao limpar dados de autenticação');
+        }
+    }
 } 
