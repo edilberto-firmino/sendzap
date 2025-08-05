@@ -65,6 +65,15 @@
                 <li><a class="dropdown-item" href="{{ route('contacts.create') }}">Novo Contato</a></li>
             </ul>
         </div>
+        <div class="dropdown">
+            <a class="dropdown-toggle d-block px-3 py-2 text-white text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                📢 Campanhas
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="{{ route('campaigns.index') }}">Listar Campanhas</a></li>
+                <li><a class="dropdown-item" href="{{ route('campaigns.create') }}">Nova Campanha</a></li>
+            </ul>
+        </div>
         {{-- Adicione outros links conforme necessário --}}
     </div>
 
