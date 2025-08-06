@@ -3,6 +3,16 @@
 echo "🚀 Iniciando SendZap - Sistema Completo"
 echo "========================================"
 
+if [ ! -d "whatsapp-service/node_modules" ]; then
+    echo "📦 Instalando dependências do WhatsApp Service..."
+    chmod +x ./install-whatsapp-service.sh
+    ./install-whatsapp-service.sh
+    echo "✅ Instalação concluída"
+else
+    echo "✅ Dependências do WhatsApp Service já instaladas"
+fi
+
+
 # Função para verificar se uma porta está em uso
 check_port() {
     lsof -ti:$1 > /dev/null 2>&1
